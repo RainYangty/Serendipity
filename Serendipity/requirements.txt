@@ -1,0 +1,6 @@
+dingtalkchatbot==1.5.3
+imutils==0.5.4
+numpy==1.19.5
+requests==2.25.1
+schedule==1.1.0
+opencv-python==4.6.0.66
