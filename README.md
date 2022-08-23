@@ -37,12 +37,22 @@ if (Time == '19' and b):
 if get_task.download_by_url("php/files/ans.txt") == False:
 ```
 
-### 修改 Serendipity.py 24行，并修改find.py全部，使其与答题卡对应	[e.g.] (以 u + " + 姓名 + " + ", 格式)
+### 修改 Serendipity.py 24行，并修改find.py全部，fixed_pos.py 17行 25行等，使其与答题卡对应	[e.g.] (以 u + " + 姓名 + " + ", 格式)
 
+Serendipity 24行
 ```
 students = [	#学生名单	按照答题卡横着填写
 	u"张三",
 	]
+```
+
+fixed_pos.py 17行与25行
+```
+#17行
+img = cv2.resize(img, (1036, 1473))
+
+#25行
+s = img[1440:1473, 990:1096]
 ```
 
 至此，修改部分完成，当然还有其他部分可以修改
@@ -61,7 +71,12 @@ Python environment_set.py
 
 ## 提示
 
-网站源码在 \Web 里
-程序源码在 \Serendipity 里
-示例答题卡在 \Excel 里
+推荐不修改示例答题卡大小，形状等，这样只要修改Serendipity.py里的部分函数即可\
+网站源码在 \Web 里\
+程序源码在 \Serendipity 里\
+示例答题卡在 \Excel 里\
 主要程序是 Serendipity.py (至于 real_time_object_detection.py 看看就好，没完工，但是可以执行)
+
+## TODO
+1.完善实时监测模块\
+2.简化他人部署前修改过程
