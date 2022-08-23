@@ -37,11 +37,11 @@ if (Time == '19' and b):
 if get_task.download_by_url("php/files/ans.txt") == False:
 ```
 
-### 修改 Serendipity.py 24行，并修改find.py全部，使其与答题卡对应
+### 修改 Serendipity.py 24行，并修改find.py全部，使其与答题卡对应	[e.g.] (以 u + " + 姓名 + " + ", 格式)
 
 ```
 students = [	#学生名单	按照答题卡横着填写
-
+	u"张三",
 	]
 ```
 
