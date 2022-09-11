@@ -104,29 +104,37 @@ def yujob():
 robot.send_text(msg = u"系统已启动，反馈时间为 19 时")
 
 total_line_last = 1	 #代表之前获取的列数，当列数不一致时开始尝试获取 
-while 1 == 1:	#每5分钟获取一次
+
+while (True):
 	now = datetime.datetime.now()
-	Time = now.strftime("%H")
-	if(b == False):
-		total_line = find_image.find_txt_line()
-		if (total_line != False and total_line != total_line_last):
-			total_line_last = total_line
-			if yujob() == False:
-				# print("系统检测到今日任务已提交但无法获取，将在 5 分钟后再次检测")
-				robot.send_text(msg=u"系统检测到今日任务已提交但无法获取，将在 5 分钟后再次检测", is_at_all=False)
-				log_write("warning", "faild to find today's task, it will retry 5 minutes later......")
-				time.sleep(300)
-			else:
-				# print("今日任务获取完毕，即将在 19 时反馈")
-				b = True
-				robot.send_text(msg=u"今日任务获取完毕，即将在 19 时反馈", is_at_all=False)
-				log_write("info", "Finish getting todays task, it will upload at 19 o'clock......")
 
-	if (Time == '19' and b):
-		job()
-		robot.send_text(msg=u"今日任务反馈完毕	ヽ(✿ﾟ▽ﾟ)ノ", is_at_all=False)
-		log_write("info", "Finish, Sleep 23H......")
-		b = False
-		time.sleep(82800)
+	#获取当前星期	from: https://blog.csdn.net/longe20111104/article/details/126049166
+	today = datetime.datetime.today()
+	year,month,day = today.year,today.month,today.day
+	weekday = datetime.date(year,month,day).strftime("%A")
 
-	time.sleep(300)
+	if (weekday != "Saturday" and weekday != "Sunday"):
+		print("OK!")
+		Time = now.strftime("%H")
+		if(b == False):
+			total_line = find_image.find_txt_line()
+			if (total_line != False and total_line > total_line_last):
+				total_line_last = total_line
+				ans = yujob()
+				if ans == False:
+					robot.send_text(msg=u"系统检测到今日任务已提交但无法获取，将持续检测", is_at_all=False)
+					log_write("warning", "faild to find today's task, it will retry minutes later......")
+				else:
+					if (ans != None):
+						# print("今日任务获取完毕，即将在 19 时反馈")
+						b = True
+						robot.send_text(msg=u"今日任务获取完毕，即将在 19 时反馈", is_at_all=False)
+						log_write("info", "Finish getting todays task, it will upload at 19 o'clock......")
+
+		if (Time == '19' and b):
+			job()
+			robot.send_text(msg=u"今日任务反馈完毕	ヽ(✿ﾟ▽ﾟ)ノ", is_at_all=False)
+			log_write("info", "Finish")
+			b = False
+
+		time.sleep(60)

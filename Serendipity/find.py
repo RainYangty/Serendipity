@@ -101,11 +101,19 @@ def find(pos):
 
 	log_write.log_write("info", "Open image and exchange the size")
 	a = edge(pos)   #如果为False则表示获取文件失败
-	if a.any() != False:
-		fixed_pos.fixed_pos(a)
-		img = cv2.resize(a, (1036, 1473))
-		img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-	else:
+	try:
+		if a.any() != False:
+			fixed_pos.fixed_pos(a)
+			img = cv2.resize(a, (1036, 1473))
+			img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+			# 二值化图像	from:https://blog.csdn.net/ljx1400052550/article/details/114735364
+			# gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)   ##要二值化图像，必须先将图像转为灰度图
+			ret, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+			# print("threshold value %s" % ret)  #打印阈值，超过阈值显示为白色，低于该阈值显示为黑色
+		else:
+			return False
+	except:
 		return False
 	log_write.log_write("info", "Finish opening image and exchanging the size")
 	#图像坐标轴左上角为(0, 0),x:横轴,y:纵轴
@@ -136,7 +144,7 @@ def find(pos):
 	#get_pix_rgb(pos, x[0], y[0])
 
 	# 确定需要检测的横坐标
-	start = knowlist(5, img, x, y, x_white, y_white)
+	start = knowlist(4, img, x, y, x_white, y_white)
 	log_write.log_write("info", "Finish getting line which needs to be checked")
 
 
@@ -179,8 +187,10 @@ def find(pos):
 		if(red_float < 0.4 and green_float < 0.4 and blue_float < 0.4):
 			cv2.circle(img, (x_start_1, y[j]), 5, (255, 255, 255))
 			STU_ID_TF[j - 1] = "T"
+			log_write.log_write("info", "STU[" + str(j) + " T" + "]: " + str(red_float) + "," + str(green_float) + "," + str(blue_float))
 		else:
 			STU_ID_TF[j - 1] = "F"
+			log_write.log_write("warning", "STU[" + str(j) + " F" + "]: " + str(red_float) + "," + str(green_float) + "," + str(blue_float))
 		cv2.circle(img, (x_start_white_1, y_white[j]), 5, (0, 255, 0))
 
 	for j in range(0, len(y), 1):   #右边
@@ -189,10 +199,19 @@ def find(pos):
 		red_float = 0.0
 		green_float = 0.0
 		blue_float = 0.0
-		red_float = red / red_white
-		green_float = green / green_white
-		blue_float = blue / blue_white
-		if(red_float < 0.2 and green_float < 0.2 and blue_float < 0.2):
+		if (red_white != 0):
+			red_float = red / red_white
+		else:
+			red_float = 1.7976931348623157e+308
+		if (green_white != 0):
+			green_float = green / green_white
+		else:
+			green_float = 1.7976931348623157e+308
+		if (blue_white != 0):
+			blue_float = blue / blue_white
+		else:
+			blue_float = 1.7976931348623157e+308
+		if(red_float < 0.4 and green_float < 0.4 and blue_float < 0.4):
 			cv2.circle(img, (x_start_2, y[j]), 5, (255, 255, 255))
 			STU_ID_TF[j + 24] = "T"
 			log_write.log_write("info", "STU[" + str(j + 25) + " T" + "]: " + str(red_float) + "," + str(green_float) + "," + str(blue_float))
@@ -213,6 +232,7 @@ def real_time_find(imgage):
 	if (type(a) != bool):
 		img = fixed_pos.fixed_pos(a)
 		img = cv2.resize(a, (1036, 1473))
+		ret, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 		# img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 		#图像坐标轴左上角为(0, 0),x:横轴,y:纵轴
 		x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -315,4 +335,4 @@ def real_time_find(imgage):
 		cv2.imshow("image", img)
 		# print(STU_ID_TF)
 		# sleep(1)
-		# cv2.waitKey(0)
+		cv2.waitKey(0)
