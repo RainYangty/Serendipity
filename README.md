@@ -84,3 +84,6 @@ Python environment_set.py
 ## 新变化
 1. 修复 \Serendipity\find.py 中可能出现的识别问题\
 2. \Serendipity\Serendipity.py 中添加星期判断，缩短判断间隔等
+
+## 顺便提及，中秋节快乐！
+By the way, happy Mid-Autumn Festival!
