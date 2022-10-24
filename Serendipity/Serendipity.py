@@ -1,29 +1,40 @@
-# from cv2 import initUndistortRectifyMap #文件操作
-#import handleC	#自定义头文件
 from dingtalkchatbot.chatbot import DingtalkChatbot#以下代码改自 https://github.com/zhuifengshen/DingtalkChatbot
-# from 答题卡OpenCV import cv_show
-# from CV2 import Cv2	#调用方法源于	https://jingyan.baidu.com/article/e6c8503cb72e7de54f1a182e.html
-# import schedule
-import time		#定时执行任务	From https://blog.csdn.net/I_m_the_king/article/details/124274340
+import time		# 定时执行任务	From https://blog.csdn.net/I_m_the_king/article/details/124274340
 import datetime
-import time
+import sys
+import set_config
 from log_write import log_write
 import find_image
 import set_config
 
+# 读取名单
+try:
+    f = open("Students_list/Students_list.txt", "r")
+    file_txt_read = f.readlines()
+except:
+	print("Error to read...")
+	sys.exit(1)
+students = file_txt_read[0]
+print("学生：\n" + students)
+
+# 初始化机器人
+robot = DingtalkChatbot(set_config.getConfig("config", "prefeedback", "webhook"), set_config.getConfig("config", "prefeedback", "secret"))  # 小群预反馈
+classrobot = DingtalkChatbot(set_config.getConfig("config", "feedback", "webhook"), set_config.getConfig("config", "feedback", "secret")) # 班级反馈机器人
+
+# 设定检测时间
+Time = set_config.getConfig("config", "time", "time")
+spacing = set_config.getConfig("config", "time", "spacing")
+mode = set_config.getConfig("config", "time", "mode")
+if (mode != "work" or mode != "everyday"):
+	print("config Error...")
+	sys.exit(1)
+print("检测时间：" + Time + "\n间隔：" + spacing + "s")
 STU_LIST = {}
 UNSTU_LIST = ""	#声明string类变量，用于存储未完成同学
 TOTAL = 0
 
 list = set_config
 
-# 初始化机器人
-robot = DingtalkChatbot(set_config.getConfig("config", "prefeedback", "webhook"), set_config.getConfig("config", "prefeedback", "secret"))  # 小群预反馈
-classrobot = DingtalkChatbot(set_config.getConfig("config", "feedback", "webhook"), set_config.getConfig("config", "feedback", "secret")) # 班级反馈机器人
-
-students = [	#学生名单	按照答题卡横着填写
-
-	]
 
 def add_stu(num):
 	global UNSTU_LIST
@@ -105,6 +116,7 @@ robot.send_text(msg = u"系统已启动，反馈时间为 19 时")
 
 total_line_last = 1	 #代表之前获取的列数，当列数不一致时开始尝试获取 
 
+
 while (True):
 	now = datetime.datetime.now()
 
@@ -113,7 +125,31 @@ while (True):
 	year,month,day = today.year,today.month,today.day
 	weekday = datetime.date(year,month,day).strftime("%A")
 
-	if (weekday != "Saturday" and weekday != "Sunday"):
+	if (mode == "work"):
+		if (weekday != "Saturday" and weekday != "Sunday"):
+			print("OK!")
+			Time = now.strftime("%H")
+			if(b == False):
+				total_line = find_image.find_txt_line()
+				if (total_line != False and total_line > total_line_last):
+					total_line_last = total_line
+					ans = yujob()
+					if ans == False:
+						robot.send_text(msg=u"系统检测到今日任务已提交但无法获取，将持续检测", is_at_all=False)
+					else:
+						if (ans != None):
+							# print("今日任务获取完毕，即将在 19 时反馈")
+							b = True
+							robot.send_text(msg=u"今日任务获取完毕，即将在 19 时反馈", is_at_all=False)
+
+		if (Time == '19' and b):
+			job()
+			robot.send_text(msg=u"今日任务反馈完毕	ヽ(✿ﾟ▽ﾟ)ノ", is_at_all=False)
+			log_write("info", "Finish")
+			b = False
+
+		time.sleep(60)
+	else:
 		print("OK!")
 		Time = now.strftime("%H")
 		if(b == False):
@@ -123,18 +159,14 @@ while (True):
 				ans = yujob()
 				if ans == False:
 					robot.send_text(msg=u"系统检测到今日任务已提交但无法获取，将持续检测", is_at_all=False)
-					log_write("warning", "faild to find today's task, it will retry minutes later......")
 				else:
 					if (ans != None):
 						# print("今日任务获取完毕，即将在 19 时反馈")
 						b = True
 						robot.send_text(msg=u"今日任务获取完毕，即将在 19 时反馈", is_at_all=False)
-						log_write("info", "Finish getting todays task, it will upload at 19 o'clock......")
 
 		if (Time == '19' and b):
 			job()
 			robot.send_text(msg=u"今日任务反馈完毕	ヽ(✿ﾟ▽ﾟ)ノ", is_at_all=False)
 			log_write("info", "Finish")
 			b = False
-
-		time.sleep(60)

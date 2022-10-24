@@ -4,7 +4,3 @@ secret =
 [feedback]
 webhook = 
 secret = 
-[time]
-time = 
-spacing = 
-mode = work
